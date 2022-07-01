@@ -5,16 +5,16 @@
 
 #define EMPTY 0 
 
-char* sdm_to_sudoku(int line_sudoku[81]) {
-    char grid[9][9], k = 0; 
+char** sdm_to_sudoku(char line_sudoku[81]) {
+    char** grid = (char**)malloc(9*sizeof(char*));
+    int k = 0; 
     for(int i = 0; i < 9; i++) {
         for(int j = 0; j <= 9; j++) {
             grid[i][j] = line_sudoku[k]; 
             k++; 
         }
     }
-    char* ptr = &grid[0][0]; 
-    return ptr; 
+    return grid; 
 }
 
 int* old_ss_to_sudoku(int grid[9][9]) {
@@ -40,8 +40,10 @@ int* ss_to_sudoku(char ss_sudoku[11][11]) {
         for(int j = 0; j < 11; j++) {
             if(temp[i][j] == '.') 
                 temp[i][j] = '0'; 
-            if(temp[i][j] == '|') 
-                temp[i][j] = temp[i][j++]; 
+            if(temp[i][j] == '|') {
+                temp[i][j] = temp[i][j+1];
+                j++; 
+            }
         }
     } 
 
@@ -50,7 +52,8 @@ int* ss_to_sudoku(char ss_sudoku[11][11]) {
         if(temp[i][0] == '-') {
             for(int k = i; i < row - 1; k++) {
                 for(int j = 0; j < col; j++) {
-                    temp[k][j] = temp[k++][j]; 
+                    temp[k][j] = temp[k + 1][j];
+                    k++; 
                 }
             } 
             i--; 
@@ -67,12 +70,18 @@ int* ss_to_sudoku(char ss_sudoku[11][11]) {
     return ptr; 
 }
 
-bool find_empty_location(int grid[9][9], int row, int col);
-
+bool find_empty_location(int grid[9][9], int row, int col) {
+    for (row = 0; row < 9; row++) {
+        for (col = 0; col < 9; col++) {
+            if (grid[row][col] == EMPTY)
+                return true;
+        }
+    }
+    return false;
+}
 bool is_safe(int grid[9][9], int row, int col, int num);
  
-bool sudoku_solver(int grid[9][9]) {
-    int row, col;
+bool sudoku_solver(int grid[9][9], int row, int col) {
  
     if (!find_empty_location(grid, row, col))
         return true; 
@@ -83,7 +92,7 @@ bool sudoku_solver(int grid[9][9]) {
             
             grid[row][col] = num;
  
-            if (sudoku_solver(grid))
+            if (sudoku_solver(grid, row, col))
                 return true;
  
             grid[row][col] = EMPTY;
@@ -93,15 +102,7 @@ bool sudoku_solver(int grid[9][9]) {
     return false;
 }
  
-bool find_empty_location(int grid[9][9], int row, int col) {
-    for (row = 0; row < 9; row++) {
-        for (col = 0; col < 9; col++) {
-            if (grid[row][col] == EMPTY)
-                return true;
-        }
-    }
-    return false;
-}
+
 
 bool used_in_row(int grid[9][9], int row, int num) {
     for (int col = 0; col < 9; col++) {
@@ -157,9 +158,9 @@ int main() {
 
     // fclose(fp); 
 
-    /*
+    
     FILE *fp; 
-    char* file_name;  
+    char file_name[20];  
     char buffer[256]; 
     char key[5]; 
     printf("Enter file path: "); 
@@ -168,13 +169,11 @@ int main() {
     scanf("%s", key); 
     fp = fopen(file_name, "rb");  
     fread(buffer, strlen(buffer)*sizeof(char), 1, fp); 
-    */
 
-    /*
-    if(key == ".sdm") {
+    if(strcmp(key, ".sdm")) {
         sdm_to_sudoku(buffer); 
     }
-    */
+    
 
     return 0; 
 }
